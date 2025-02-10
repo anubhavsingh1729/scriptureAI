@@ -1,3 +1,5 @@
 .DS_Store
 /anaconda_projects
 embeddings.ipynb
+/.ipynb_checkpoints
+/__pycache__
