@@ -66,3 +66,49 @@ button:focus-visible {
     background-color: #f9f9f9;
   }
 }
+
+
+.search-box {
+  width: 75%;
+  max-width: 500px;
+  padding: 15px;
+  font-size: 18px;
+  border: 2px solid #ccc;
+  border-radius: 30px;
+  text-align: center;
+}
+
+.search-button {
+  margin-top: 15px;
+  width: 75%;
+  max-width: 500px;
+  padding: 12px;
+  background-color: #007bff;
+  color: white;
+  border: none;
+  border-radius: 10px;
+  cursor: pointer;
+}
+
+.results-container {
+  margin-top: 20px;
+  width: 100%;
+  max-width: 800px;
+  background-color: #000503;
+  border-left: 5px solid #262727;
+  padding: 15px;
+  border-radius: 10px;
+}
+
+.results-container ul {
+  list-style-type: disc; /* Bullet points */
+  margin-left: 20px;
+  padding-left: 10px;
+}
+
+.results-container li {
+  font-size: 18px;
+  text-align: justify; /* Justify text alignment */
+  line-height: 1.5;
+  margin-bottom: 8px;
+}
