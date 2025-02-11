@@ -3,3 +3,5 @@
 embeddings.ipynb
 /.ipynb_checkpoints
 /backend/__pycache__
+/frontend/node_modules
+

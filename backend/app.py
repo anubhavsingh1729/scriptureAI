@@ -11,7 +11,7 @@ app = FastAPI()
 # Enable CORS so the React app can call the API.
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],  # For production, restrict this to your frontend’s domain.
+    allow_origins=["*"],  # allow access from frontend. For production, restrict this to your frontend’s domain.
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
@@ -31,9 +31,6 @@ with open("../data/corpus.json", "r") as f:
 class SearchRequest(BaseModel):
     query: str
 
-@app.get("/api/get_text/{ch}")
-def get_text(ch:int):
-    return corpus[ch]
 
 @app.post("/api/search")
 async def search(req: SearchRequest):
@@ -56,9 +53,8 @@ async def search(req: SearchRequest):
     
     return {"results": results}
 
-@app.get("/query")
+@app.get("/verses")
 def query(query: str):
-    
     # Compute embedding for the user query
     query_embedding = model.encode([query], convert_to_numpy=True)
     query_embedding = query_embedding / np.linalg.norm(query_embedding, axis=1, keepdims=True)
@@ -76,4 +72,4 @@ def query(query: str):
 
 if __name__ == "__main__":
     import uvicorn
-    uvicorn.run(app, host="0.0.0.0", port=8000, debug=True)
+    uvicorn.run(app, host="0.0.0.0", port=8000)
