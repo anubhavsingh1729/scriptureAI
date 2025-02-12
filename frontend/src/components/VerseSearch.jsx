@@ -1,7 +1,5 @@
 import React, { useState } from "react";
 import api from "../api";
-import "../index.css";
-
 
 const VerseSearch = () => {
   const [query, setQuery] = useState("");
@@ -27,6 +25,7 @@ const VerseSearch = () => {
 
   return (
     <div>
+      <h1>Bible Search</h1>
       <input
         type="text"
         className="search-box"
@@ -41,7 +40,7 @@ const VerseSearch = () => {
 
       {results.length > 0 && (
         <div className="results-container">
-          <strong>Results:</strong>
+          <strong>Verses:</strong>
           <ul>
             {results.map((verse, index) => (
               <li key={index}>{verse}</li>
