@@ -6,7 +6,7 @@ import "./css/App.css"
 import { Routes,Route } from "react-router-dom"
 import NavBar from "./components/NavBar";
 import VerseSearch from "./components/VerseSearch";
-import Summarize from "./components/Summarize";
+import Commentary from "./components/Commentary";
 import "./css/index.css"
 
 
@@ -16,7 +16,7 @@ const App = () => {
       <NavBar />
       <Routes>
         <Route path = "/" element={<VerseSearch />} />
-        <Route path = "/summary" element={<Summarize />} />
+        <Route path = "/commentary" element={<Commentary />} />
       </Routes>
     </div>
   );

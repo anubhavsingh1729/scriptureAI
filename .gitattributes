@@ -1,0 +1,2 @@
+data/comm_index.bin filter=lfs diff=lfs merge=lfs -text
+data/comm_corpus.json filter=lfs diff=lfs merge=lfs -text

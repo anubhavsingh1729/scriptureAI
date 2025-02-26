@@ -5,7 +5,7 @@
 
   color-scheme: light dark;
   color: rgba(255, 255, 255, 0.87);
-  background-color: #242424;
+  background-color: #201e1e;
 
   font-synthesis: none;
   text-rendering: optimizeLegibility;
@@ -99,7 +99,7 @@ button:focus-visible {
   margin-top: 20px;
   width: 100%;
   max-width: 800px;
-  background-color: #000503;
+  background-color: #000000;
   border-left: 5px solid #262727;
   padding: 15px;
   border-radius: 10px;

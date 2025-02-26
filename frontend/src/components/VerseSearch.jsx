@@ -25,7 +25,7 @@ const VerseSearch = () => {
 
   return (
     <div>
-      <h1>Bible Search</h1>
+      <h1>Bible Search Verses</h1>
       <input
         type="text"
         className="search-box"
