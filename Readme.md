@@ -6,7 +6,7 @@ A lightweight application for semantic Bible verse search and commentary summari
 
 ## Project Overview
 
-- **Search Verses:** Enter a query to retrieve relevant Bible verses.  
+- **Search Verses:** Enter a query/keywords to retrieve relevant Bible verses.  
 - **Commentary Summaries:** Fetch commentary passages related to your query, then generate a concise summary via an LLM (Long T5).  
 - **Data & Indexes:** Precomputed FAISS indexes (`faiss_index.bin` for verses, `comm_index.bin` for commentaries) are stored in the `data/` folder.  
 
@@ -50,8 +50,7 @@ The backend (`backend/`) handles all AI-related tasks (semantic search, summariz
    ```bash
    uvicorn app:app --reload
    ```
-3. The API will be accessible at:  
-   [http://127.0.0.1:8000](http://127.0.0.1:8000)
+3. The API will be accessible at localhost
 
 ### 2. Frontend (React)
 
@@ -63,7 +62,6 @@ The backend (`backend/`) handles all AI-related tasks (semantic search, summariz
    ```bash
    npm start
    ```
-3. Open [http://localhost:3000](http://localhost:3000) in your browser to access the UI.
 
 ---
 
