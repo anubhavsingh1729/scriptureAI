@@ -21,6 +21,7 @@ app.add_middleware(
 def home():
     return {"a":"b"}
 
+#Sentence Transformer===========================================================================================
 model = SentenceTransformer("all-MiniLM-L6-v2")
 
 index = faiss.read_index("../data/faiss_index.bin")
@@ -35,7 +36,67 @@ with open("../data/comm_corpus.json", "r") as f:
 
 class SearchRequest(BaseModel):
     query: str
+#================================================================================================================
 
+# define LLM model
+
+# from transformers import BartForConditionalGeneration, BartTokenizer
+# model_name = 'facebook/bart-large-cnn'
+# tokenizer=BartTokenizer.from_pretrained(model_name)
+# llm_model = BartForConditionalGeneration.from_pretrained(model_name)
+
+from transformers import AutoTokenizer, LongT5ForConditionalGeneration
+t5tokenizer = AutoTokenizer.from_pretrained("google/long-t5-tglobal-base")
+t5model = LongT5ForConditionalGeneration.from_pretrained("google/long-t5-tglobal-base")
+
+#helper functions for commentary summarisation: -----------------------------------
+def summarize(text,tokenizer,model,sumlen=500,token_len=1024):
+    tokens = tokenizer.encode(
+        "summarize: "+text,
+        return_tensors='pt',
+        max_length=token_len,
+        truncation = True
+    )
+
+    outputs = model.generate(
+        tokens,
+        max_length=sumlen,
+        min_length=sumlen//2,
+        length_penalty=1,
+        early_stopping=True,
+        no_repeat_ngram_size=3,
+        
+        num_beams=5,
+        top_k=50,
+        top_p=0.92,
+        temperature=0.7
+    )
+    
+    summary = tokenizer.decode(outputs[0], skip_special_tokens=True)
+    return summary
+
+def split_text(text,tokenizer,max_tokens=900,overlap_per = 10):
+    tokens = tokenizer.tokenize(text)
+    
+    overlap_len = int(max_tokens*overlap_per /100)
+    
+    chunks = [tokens[i:i+max_tokens] for i in range(0,len(tokens),max_tokens-overlap_len)]
+    
+    texts = [tokenizer.decode(
+        tokenizer.convert_tokens_to_ids(chunk),skip_special_token=True
+    ) for chunk in chunks]
+    
+    return texts
+
+def recursive_summarize(text, tokenizer, model, target_length=500, chunk_size=900):
+    while len(text.split()) > target_length:
+        chunks = split_text(text, tokenizer, max_tokens=chunk_size)
+        summaries = [summarize(chunk, tokenizer, model, sumlen=target_length // 2) for chunk in chunks]
+        text = " ".join(summaries)  
+    
+    return summarize(text, tokenizer, model, sumlen=target_length)
+#-----------------------------------------------------------------------------------------------
+#-----------------------------------------------------------------------------------------------
 
 # @app.post("/api/search")
 # async def search(req: SearchRequest):
@@ -75,12 +136,11 @@ def query(query: str):
     
     return {"results": results}
 
-@app.get("/commentary")
-def commentary(query: str):
+#@app.get("/commentary")
+def commentary(query: str,k=5):
     query_emb = model.encode([query],convert_to_numpy=True)
     query_emb = query_emb / np.linalg.norm(query_emb, axis=1, keepdims=True)
 
-    k=5
     distances, indices = comm_index.search(query_emb, k)
     results = []
     for score, idx in zip(distances[0], indices[0]):
@@ -90,7 +150,14 @@ def commentary(query: str):
 
     return {"results": results}
 
-
+#use commentaries and summarize them to form an answer for the user query
+@app.get("/commentary")
+def get_answer(query: str):
+    results = commentary(query,k=5)['results']
+    commentaries = ''.join(results)
+    #summary = recursive_summarize(commentaries,tokenizer,llm_model)
+    summary = summarize(commentaries, t5tokenizer, t5model, sumlen=500,token_len=5000)
+    return {"answer":summary,"commentaries":results}
 
 if __name__ == "__main__":
     import uvicorn
