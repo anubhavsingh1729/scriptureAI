@@ -68,7 +68,7 @@ The backend (`backend/`) handles all AI-related tasks (semantic search, summariz
 ## Usage
 
 - **Verse Search**  
-  - Navigate to the Home page (`"/"`)  
+  - Navigate to the verse page (`"/verse"`)  
   - Enter a query and click **Search**  
   - View matching verses
 
@@ -86,7 +86,3 @@ The backend (`backend/`) handles all AI-related tasks (semantic search, summariz
 - **CORS:** Currently open to all origins (`allow_origins=["*"]`). For production, restrict this to your domain.
 
 ---
-
-## License
-
-Feel free to adapt or extend this project as needed. Check the repository for any specific license information.
