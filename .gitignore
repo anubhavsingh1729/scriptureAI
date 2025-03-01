@@ -5,6 +5,5 @@ embeddings.ipynb
 /backend/__pycache__
 /frontend/node_modules
 *.csv
-/data/comm_corpus.json
-/data/comm_index.bin
+
 
