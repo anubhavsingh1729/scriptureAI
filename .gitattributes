@@ -1,2 +1,4 @@
 data/comm_index.bin filter=lfs diff=lfs merge=lfs -text
 data/comm_corpus.json filter=lfs diff=lfs merge=lfs -text
+data/bibleindex.bin filter=lfs diff=lfs merge=lfs -text
+data/biblecorpus.json filter=lfs diff=lfs merge=lfs -text
