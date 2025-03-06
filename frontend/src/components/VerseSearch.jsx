@@ -29,7 +29,7 @@ const VerseSearch = () => {
       <input
         type="text"
         className="search-box"
-        placeholder="Search for verses..."
+        placeholder="Enter text..."
         value={query}
         onChange={(e) => setQuery(e.target.value)}
       />

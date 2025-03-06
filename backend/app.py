@@ -5,6 +5,7 @@ from sentence_transformers import SentenceTransformer
 import numpy as np
 import faiss
 import json
+import torch
 
 app = FastAPI()
 
@@ -28,6 +29,11 @@ index = faiss.read_index("../data/faiss_index.bin")
 
 comm_index = faiss.read_index("../data/comm_index.bin")
 
+bibleindex = faiss.read_index('../data/bibleindex.bin')
+
+with open("../data/biblecorpus.json","r") as f:
+    biblecorpus = json.load(f)
+
 with open("../data/corpus.json", "r") as f:
     corpus = json.load(f)
 
@@ -50,26 +56,27 @@ t5tokenizer = AutoTokenizer.from_pretrained("google/long-t5-tglobal-base")
 t5model = LongT5ForConditionalGeneration.from_pretrained("google/long-t5-tglobal-base")
 
 #helper functions for commentary summarisation: -----------------------------------
-def summarize(text,tokenizer,model,sumlen=500,token_len=1024):
+def summarize(text,tokenizer,model,device,ratio=0.5,token_len=1024):
     tokens = tokenizer.encode(
-        "summarize: "+text,
+        "Summarize: "+text,
         return_tensors='pt',
         max_length=token_len,
         truncation = True
     )
-
+    model.to(device)
+    sumlen = int(tokens.shape[1]*ratio)
+    
     outputs = model.generate(
-        tokens,
+        tokens.to(device),
         max_length=sumlen,
         min_length=sumlen//2,
-        length_penalty=1,
+        length_penalty=2,
         early_stopping=True,
         no_repeat_ngram_size=3,
-        
-        num_beams=5,
-        top_k=50,
-        top_p=0.92,
-        temperature=0.7
+        # top_k=40,
+        # top_p=0.85,
+        # temperature=0.6
+        num_beams=7
     )
     
     summary = tokenizer.decode(outputs[0], skip_special_tokens=True)
@@ -127,11 +134,12 @@ def query(query: str):
     
     # Retrieve the top 5 matching verses
     k = 5
-    distances, indices = index.search(query_embedding, k)
-    results = []
-    for score, idx in zip(distances[0], indices[0]):
-        verse = corpus[idx]
-        #verse['score'] = float(score)
+    distances, indices = bibleindex.search(query_embedding, k)
+    verses = [biblecorpus[i] for i in indices[0]]
+
+    results=[]
+    for res in verses:
+        verse = f"{res['verse']} : {res['text']}"
         results.append(verse)
     
     return {"results": results}
@@ -141,23 +149,37 @@ def commentary(query: str,k=5):
     query_emb = model.encode([query],convert_to_numpy=True)
     query_emb = query_emb / np.linalg.norm(query_emb, axis=1, keepdims=True)
 
-    distances, indices = comm_index.search(query_emb, k)
-    results = []
-    for score, idx in zip(distances[0], indices[0]):
-        comm = comm_corpus[idx]
-        #verse['score'] = float(score)
-        results.append(comm.replace('/n',''))
+    distances, indices = bibleindex.search(query_emb, k)
+    results = [biblecorpus[i] for i in indices[0]]
+    # results = []
+    # for score, idx in zip(distances[0], indices[0]):
+    #     res = corpus[idx]
+    #     results.append(res.replace('/n',''))
 
     return {"results": results}
 
-#use commentaries and summarize them to form an answer for the user query
+#use commentaries and summarize them in response to the user query
 @app.get("/commentary")
 def get_answer(query: str):
     results = commentary(query,k=5)['results']
-    commentaries = ''.join(results)
-    #summary = recursive_summarize(commentaries,tokenizer,llm_model)
-    summary = summarize(commentaries, t5tokenizer, t5model, sumlen=500,token_len=5000)
-    return {"answer":summary,"commentaries":results}
+    # commentaries = []
+    # for i in results:
+    #     commentaries.append("".join(i['commentaries']))
+    # text = ''.join(commentaries)
+    # #commentaries = ''.join(results)
+    # #summary = recursive_summarize(commentaries,tokenizer,llm_model)
+    # final_summary = summarize(text, t5tokenizer, t5model, sumlen=500,token_len=5000)
+
+    device='cuda' if torch.cuda.is_available() else 'cpu'
+    text=[]
+    for i in results:
+        text.append("for the given verse: "+i['text']+" we have following commentaries: "+"".join(i['commentaries']))
+    summaries=[]
+    for i in text:
+        s = summarize(i, t5tokenizer, t5model, device,ratio=0.25,token_len=5000)
+        summaries.append(s)
+    final_summary = summarize(" ".join(summaries), t5tokenizer, t5model, device, ratio = 0.5,token_len=5000)
+    return {"answer":final_summary,"commentaries":results}
 
 if __name__ == "__main__":
     import uvicorn

@@ -1,74 +1,52 @@
-import re
-from collections import defaultdict
-import pandas as pd
+import torch
 from sentence_transformers import SentenceTransformer
-import numpy as np
+import pandas as pd
 import faiss
 import json
+from collections import defaultdict
 
-embedder = SentenceTransformer("all-MiniLM-L6-v2")
+df = pd.read_csv("../data/text_with_commentary.csv")
 
-#device = 'cuda' if torch.cuda.is_available() else 'cpu'
-device = 'cpu'
+device = 'cuda' if torch.cuda.is_available() else 'cpu'
 
-def preprocess(text):
-    text = re.sub(r'[^a-zA-Z]',' ',text)
-    text = ' '.join(text.split())
-    return text
+# Initialize a pre-trained SentenceTransformer for embeddings
+model = SentenceTransformer('all-MiniLM-L6-v2', device=device)
 
-def verses(embedder):
-    dt = pd.read_csv("../data/texts.csv")
-    dt['text'] = dt['content'].apply(preprocess)
+# Dictionary to aggregate commentaries per unique text
+metadata_dict = defaultdict(lambda: {"verse": "", "commentaries": []})
 
-    bible=dt.loc[2,'content']
-    pattern = r"([a-zA-Z]+) (\d+):(\d+)\t(.+)"
+# create metadata from bible text
+for _, row in df.iterrows():
+    text = row["text"]
+    verse = row["verse"]
+    commentary_entry = f"{row['father_name']}: {row['commentary']}"
 
-    # Dictionary to hold chapters and verses
-    bible_structure = defaultdict(lambda: defaultdict(list))
+    # Initialize verse if not set
+    if not metadata_dict[text]["verse"]:
+        metadata_dict[text]["verse"] = verse
 
-    # Process the text
-    for match in re.finditer(pattern, bible):
-        book, chapter, verse, verse_text = match.groups()
-        bible_structure[book][int(chapter)].append((int(verse), verse_text.strip()))
+    # Append the commentary
+    metadata_dict[text]["commentaries"].append(commentary_entry)
 
-    corpus = []
-    for book, chapters in bible_structure.items():
-        for chapter, verses in sorted(chapters.items()):
-            for verse_num, verse_text in sorted(verses):
-                corpus.append(verse_text)
+# Convert dictionary to a list of dictionaries
+metadata = [{"text": text, "verse": data["verse"], "commentaries": data["commentaries"]}
+            for text, data in metadata_dict.items()]
 
+# save corpus as json
+with open("../data/biblecorpus.json", "w") as f:
+    json.dump(metadata, f)
 
+# create embeddings
+data = []
+for i in metadata:
+    data.append(i['verse']+': '+i['text'])
 
-    print("creating embeddings...")
-    embeddings = embedder.encode(corpus, convert_to_numpy=True)
+embeddings = model.encode(data, convert_to_numpy=True)
 
-    embeddings = embeddings / np.linalg.norm(embeddings, axis=1, keepdims=True)
+# Build FAISS index
+d = embeddings.shape[1] 
+index = faiss.IndexFlatL2(d)
+index.add(embeddings)
 
-    # Build a FAISS index with inner product (for cosine similarity with normalized vectors)
-    embedding_dim = embeddings.shape[1]
-    index = faiss.IndexFlatIP(embedding_dim)
-    index.add(embeddings)
-    print("embeddings saved")
-    faiss.write_index(index, "../data/faiss_index.bin")
-    with open("../data/corpus.json", "w") as f:
-        json.dump(corpus, f)
-
-def format_entry(row):
-    return f"""{row['commentary']}"""
-
-def commentaries(embedder):
-    df = pd.read_csv("../data/text_with_commentary.csv")
-    data = list(df.apply(format_entry, axis=1))
-
-    print("create embeddings...")
-    embeddings = embedder.encode(data, convert_to_tensor=True, device = device)
-    emb_np = embeddings.cpu().detach().numpy()
-    index = faiss.IndexFlatL2(emb_np.shape[1])
-    faiss.write_index(index, "../data/comm_index.bin")
-    index.add(emb_np)
-    with open("../data/comm_corpus.json", "w") as f:
-        json.dump(data, f)
-
-
-verses(embedder)
-commentaries(embedder)
+# Save FAISS index
+faiss.write_index(index, "../data/bibleindex.bin")

@@ -35,7 +35,7 @@ const Commentary = () => {
           <input
             type="text"
             className="search-box"
-            placeholder="Get answer from Commentaries..."
+            placeholder="Enter text.."
             value={query}
             onChange={(e) => setQuery(e.target.value)}
           />
@@ -62,7 +62,14 @@ const Commentary = () => {
                         <div className="modal-content">
                             <ul>
                                 {commentaries.map((comm, index) => (
-                                    <li key={index}>{comm}</li>
+                                    <li key={index}>
+                                        <strong>{comm.verse}:{comm.text}</strong>
+                                        <ul>
+                                            {comm.commentaries.map((com,subindex) => (
+                                                <li key={subindex}>{com}</li>
+                                            ))}
+                                        </ul>
+                                    </li>
                                 ))}
                             </ul>
                         </div>
