@@ -7,7 +7,7 @@ A lightweight application for semantic Bible verse search and commentary summari
 ## Project Overview
 
 - **Search Verses:** Enter a query/keywords to retrieve relevant Bible verses.  
-- **Commentary Summaries:** Fetch commentary passages related to your query, then generate a concise summary via an LLM (Long T5).  
+- **Commentary Search:** Fetch commentary passages related to your query, then generate a concise summary via an LLM (Long T5).  
 - **Data & Indexes:** Precomputed FAISS indexes (`faiss_index.bin` for verses, `comm_index.bin` for commentaries) are stored in the `data/` folder.  
 
 The backend (`backend/`) handles all AI-related tasks (semantic search, summarization), while the frontend (`frontend/`) provides a simple, user-friendly interface.
@@ -19,10 +19,8 @@ The backend (`backend/`) handles all AI-related tasks (semantic search, summariz
 ```
 .
 ├── data/
-│   ├── corpus.json          # Verse corpus
-│   ├── comm_corpus.json     # Commentary corpus
-│   ├── faiss_index.bin      # FAISS index for verses
-│   └── comm_index.bin       # FAISS index for commentaries
+│   ├── biblecorpus.json     # bible corpus
+│   ├── bibleindex.bin      # FAISS index
 ├── backend/
 │   ├── app.py               # FastAPI application
 │   └── test.py              # (Optional) test script
@@ -81,7 +79,7 @@ The backend (`backend/`) handles all AI-related tasks (semantic search, summariz
 
 ## Notes & Customization
 
-- **Data & Indexes:** The project expects precomputed FAISS indexes in `data/`. If you modify or replace the corpora (`corpus.json`, `comm_corpus.json`), you must rebuild the indexes accordingly.  
+- **Data & Indexes:** The project expects precomputed FAISS indexes in `data/`. If you modify or replace the corpora (`biblecorpus.json`), you must rebuild the indexes accordingly.  
 - **LLM Model:** By default, the project uses `google/long-t5-tglobal-base` for summarization. Adjust in `app.py` as needed.  
 - **CORS:** Currently open to all origins (`allow_origins=["*"]`). For production, restrict this to your domain.
 
