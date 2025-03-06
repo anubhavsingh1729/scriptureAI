@@ -25,20 +25,20 @@ def home():
 #Sentence Transformer===========================================================================================
 model = SentenceTransformer("all-MiniLM-L6-v2")
 
-index = faiss.read_index("../data/faiss_index.bin")
+# index = faiss.read_index("../data/faiss_index.bin")
 
-comm_index = faiss.read_index("../data/comm_index.bin")
+# comm_index = faiss.read_index("../data/comm_index.bin")
 
 bibleindex = faiss.read_index('../data/bibleindex.bin')
 
 with open("../data/biblecorpus.json","r") as f:
     biblecorpus = json.load(f)
 
-with open("../data/corpus.json", "r") as f:
-    corpus = json.load(f)
+# with open("../data/corpus.json", "r") as f:
+#     corpus = json.load(f)
 
-with open("../data/comm_corpus.json", "r") as f:
-    comm_corpus = json.load(f)
+# with open("../data/comm_corpus.json", "r") as f:
+#     comm_corpus = json.load(f)
 
 class SearchRequest(BaseModel):
     query: str
@@ -126,7 +126,7 @@ def recursive_summarize(text, tokenizer, model, target_length=500, chunk_size=90
     
 #     return {"results": results}
 
-@app.get("/verses")
+@app.get("/api/verses")
 def query(query: str):
     # Compute embedding for the user query
     query_embedding = model.encode([query], convert_to_numpy=True)
@@ -159,7 +159,7 @@ def commentary(query: str,k=5):
     return {"results": results}
 
 #use commentaries and summarize them in response to the user query
-@app.get("/commentary")
+@app.get("/api/commentary")
 def get_answer(query: str):
     results = commentary(query,k=5)['results']
     # commentaries = []
