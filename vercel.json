@@ -8,7 +8,10 @@
       },
       {
         "src": "backend/app.py",
-        "use": "@vercel/python"
+        "use": "@vercel/python",
+        "config" : {
+        "buildCommand": "pip install --upgrade -r requirements.txt"
+    }
       }
     ],
     "routes": [
