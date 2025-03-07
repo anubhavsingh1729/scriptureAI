@@ -1,5 +1,5 @@
 # ScriptureLM
-![Home page](data/homepage.png)
+![Home page](data/app.png)
 
 A lightweight application for semantic Bible verse search and commentary summarization. The project uses **FastAPI**, **FAISS**, and **Sentence Transformers** on the backend for semantic search, and **React** with **React Router** on the frontend for an intuitive user interface. It also leverages a **Long T5** model to summarize commentary text.
 
