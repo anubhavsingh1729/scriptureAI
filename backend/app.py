@@ -144,8 +144,8 @@ def query(query: str):
     
     return {"results": results}
 
-#@app.get("/commentary")
-def commentary(query: str,k=5):
+@app.get("/api/commentary")
+def commentary(query: str, k: int = 5):
     query_emb = model.encode([query],convert_to_numpy=True)
     query_emb = query_emb / np.linalg.norm(query_emb, axis=1, keepdims=True)
 
@@ -159,7 +159,7 @@ def commentary(query: str,k=5):
     return {"results": results}
 
 #use commentaries and summarize them in response to the user query
-@app.get("/api/commentary")
+@app.get("/api/summary")
 def get_answer(query: str):
     results = commentary(query,k=5)['results']
     # commentaries = []

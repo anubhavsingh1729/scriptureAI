@@ -1,96 +1,102 @@
 import React, { useState } from "react";
-import { use } from "react";
 import api from "../api";
 
 const Commentary = () => {
-
     const [commentaries, setCommentaries] = useState([]);
     const [summary, setSummary] = useState("");
     const [query, setQuery] = useState("");
-    const [loading, setLoading] = useState(false);
+    const [loadingSummary, setLoadingSummary] = useState(false);
+    const [loadingCommentaries, setLoadingCommentaries] = useState(false)
     const [showPopup, setShowPopup] = useState(false);
 
-    const handleSubmit = async () => {
-        if(!query.trim()) {
+    const getSummary = async () => {
+        if (!query.trim()) {
             alert("Please enter a query!");
             return;
         }
-        setLoading(true);
-        setCommentaries([]);
+        setLoadingSummary(true);
+        try {
+            const response = await api.get("/summary", { params: { query } });
+            setSummary(response.data.answer);
+            setShowPopup(true);
+        } catch (error) {
+            alert("Error fetching summary");
+        } finally {
+            setLoadingSummary(false);
+        }
+    };
+
+    const getCommentary = async () => {
+        if (!query.trim()) {
+            alert("Please enter a query!");
+            return;
+        }
+        setLoadingCommentaries(true);
+        setSummary(""); 
         setShowPopup(false);
         try {
-            const response = await api.get("/commentary", {params : { query } });
-            setCommentaries(response.data.commentaries);
-            setSummary(response.data.answer);
+            const response = await api.get("/commentary", { params: { query } });
+            setCommentaries(response.data.results);
         } catch (error) {
-            alert ("Error");
+            alert("Error fetching commentary");
         } finally {
-            setLoading(false);
+            setLoadingCommentaries(false);
         }
     };
 
     return (
-        <div>
-          <h1>Bible Search Commentaries</h1>
-          <input
-            type="text"
-            className="search-box"
-            placeholder="Enter text.."
-            value={query}
-            onChange={(e) => setQuery(e.target.value)}
-          />
-          
-          <button className="search-button" onClick={handleSubmit} disabled={loading}>
-            {loading ? "Searching..." : "Search"}
-          </button>
-          {summary && (<div className="results-container">
-            <strong>Summary of Commentaries:</strong>
-            <p>{summary}</p>
-          </div>)}
+        <div className="container">
+        <h1>Bible Search Commentaries</h1>
+        
+            <div className="search-container">
+                <input
+                    type="text"
+                    className="search-box"
+                    placeholder="Enter text..."
+                    value={query}
+                    onChange={(e) => setQuery(e.target.value)}
+                />
 
-          {commentaries.length > 0 && (
-                <button className="show-button" onClick={() => setShowPopup(true)}>
-                    Show Commentaries
-                </button>
-            )}
+                <div className="button-container">
+                    <button className="search-button" onClick={getSummary} disabled={loadingSummary}>
+                        {loadingSummary ? "Summarizing..." : "Summary"}
+                    </button>
+                    
+                    <button className="search-button" onClick={getCommentary} disabled={loadingCommentaries}>
+                        {loadingCommentaries ? "Searching..." : "Commentary"}
+                    </button>
+                </div>
+            </div>
 
-            {/* Popup Modal for Commentaries */}
-            {showPopup && (
-                <div className="modal-overlay">
-                    <div className="modal">
-                        <h2>Commentaries</h2>
-                        <div className="modal-content">
-                            <ul>
-                                {commentaries.map((comm, index) => (
-                                    <li key={index}>
-                                        <strong>{comm.verse}:{comm.text}</strong>
-                                        <ul>
-                                            {comm.commentaries.map((com,subindex) => (
-                                                <li key={subindex}>{com}</li>
-                                            ))}
-                                        </ul>
-                                    </li>
-                                ))}
-                            </ul>
-                        </div>
-                        <button className="close-button" onClick={() => setShowPopup(false)}>Close</button>
-                    </div>
+            {commentaries.length > 0 && (
+                <div className="results-container">
+                    <h2 style={{ color: "white" }}>Commentaries</h2>
+                    <ul>
+                        {commentaries.map((comm, index) => (
+                            <li key={index} style={{ color: "white" }}>
+                                <strong>{comm.verse}: {comm.text}</strong>
+                                <ul>
+                                    {comm.commentaries.map((com, subindex) => (
+                                        <li key={subindex} style={{ color: "white" }}>{com}</li>
+                                    ))}
+                                </ul>
+                            </li>
+                        ))}
+                    </ul>
                 </div>
             )}
 
-          {/* {commentaries.length > 0 && (
-            <div className="results-container">
-              <strong>Commentaries:</strong>
-              <ul>
-                {commentaries.map((comm, index) => (
-                  <li key={index}>{comm}</li>
-                ))}
-              </ul>
-            </div>
-          )} */}
-
+            {showPopup && (
+                            <div className="modal-overlay">
+                                <div className="modal">
+                                    <h2>Summary</h2>
+                                    <p>{summary}</p>
+                                    <button className="close-button" onClick={() => setShowPopup(false)}>Close</button>
+                                </div>
+                            </div>
+                        )}
         </div>
-      );
+    );
 };
 
-export default Commentary
+export default Commentary;

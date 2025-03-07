@@ -24,8 +24,10 @@ const VerseSearch = () => {
   };
 
   return (
-    <div>
+    <div className="container">
       <h1>Bible Search Verses</h1>
+      
+      <div className="search-container">
       <input
         type="text"
         className="search-box"
@@ -33,11 +35,12 @@ const VerseSearch = () => {
         value={query}
         onChange={(e) => setQuery(e.target.value)}
       />
-      
-      <button className="search-button" onClick={handleSubmit} disabled={loading}>
-        {loading ? "Searching..." : "Search"}
-      </button>
-
+      <div className="button-container">
+        <button className="search-button" onClick={handleSubmit} disabled={loading}>
+            {loading ? "Searching..." : "Search"}
+        </button>
+      </div>
+      </div>
       {results.length > 0 && (
         <div className="results-container">
           <strong>Verses:</strong>

@@ -5,5 +5,5 @@ embeddings.ipynb
 /backend/__pycache__
 /frontend/node_modules
 *.csv
-
+/backend/test.py
 
