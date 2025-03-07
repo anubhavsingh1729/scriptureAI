@@ -47,7 +47,7 @@ The backend (`backend/`) handles all AI-related tasks (semantic search, summariz
 1. **Install Python dependencies** (e.g., FastAPI, Uvicorn, FAISS, Sentence Transformers, Transformers).  
 2. In the `backend/` directory, run:
    ```bash
-   uvicorn app:app --reload
+   python3 app.py
    ```
 3. The API will be accessible at localhost
 
@@ -59,7 +59,7 @@ The backend (`backend/`) handles all AI-related tasks (semantic search, summariz
    ```
 2. **Start the development server**:
    ```bash
-   npm start
+   npm run dev
    ```
 
 ---
